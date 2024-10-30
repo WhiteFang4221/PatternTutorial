@@ -2,32 +2,37 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Example : MonoBehaviour
+public class MovementBehaivourSwitcher : MonoBehaviour
 {
     [SerializeField] private Sheriff _sheriff;
     [SerializeField] private Transform _target;
     [SerializeField] private List<Transform> _patrolPoints;
 
+    private MovementStrategyFactory _factory ;
+
     private void Awake()
     {
-        _sheriff.SetMover(new NoMovePattern());
+        _factory = new MovementStrategyFactory(_target, _patrolPoints);
+        SetMover(MoverTypes.NoMove);
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            _sheriff.SetMover(new NoMovePattern());
+            SetMover(MoverTypes.NoMove);
         }
 
         if (Input.GetKeyDown(KeyCode.W))
         {
-            _sheriff.SetMover(new PointByPointMover(_sheriff, _patrolPoints.Select(point => point.position)));
+            SetMover(MoverTypes.PointByPoint);
         }
 
         if ( Input.GetKeyDown(KeyCode.S))
         {
-            _sheriff.SetMover(new MoveToTargetPattern(_sheriff, _target));
+            SetMover(MoverTypes.TargetFollower);
         }
     }
+
+    private void SetMover (MoverTypes moverType) => _sheriff.SetMover(_factory.Get(moverType, _sheriff));
 }
